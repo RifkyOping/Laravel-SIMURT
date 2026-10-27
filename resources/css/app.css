@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer utilities {
+    /* Human-crafted natural easing curve (inspired by Apple iOS & Linear design system) */
+    .ease-spring {
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Tactile button micro-press feedback */
+    .tactile-btn {
+        transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+    }
+    .tactile-btn:active {
+        transform: scale(0.97) translateY(0.5px);
+    }
+
+    /* Smooth card hover lift */
+    .card-lift {
+        transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease;
+        will-change: transform, box-shadow;
+    }
+    .card-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -4px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Interactive pill tab micro-feedback */
+    .pill-tab {
+        transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+    }
+    .pill-tab:active {
+        transform: scale(0.96);
+    }
+
+    /* Row hover highlight */
+    .table-row-hover {
+        transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Natural page entry reveal (crisp, subtle 6px offset, never sluggish) */
+    @keyframes naturalFadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-page-enter {
+        animation: naturalFadeInUp 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .stagger-1 { animation-delay: 35ms; }
+    .stagger-2 { animation-delay: 70ms; }
+    .stagger-3 { animation-delay: 105ms; }
+    .stagger-4 { animation-delay: 140ms; }
+
+    /* Soft natural breathing pulse for live badges */
+    @keyframes softBreathe {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.08);
+            opacity: 0.85;
+        }
+    }
+
+    .animate-soft-breathe {
+        animation: softBreathe 3s ease-in-out infinite;
+    }
+}
