@@ -105,7 +105,15 @@
 
                     <!-- Sisi Kanan: Status & Aksi -->
                     <div class="flex items-center gap-3.5 flex-shrink-0">
-                        @if($isDone)
+                        @if($sesi && $sesi->status === 'diskualifikasi')
+                            <span class="inline-flex items-center justify-center px-3.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                Didiskualifikasi
+                            </span>
+                            <a href="{{ route('peserta.ujian.masuk', $j->id) }}" 
+                               class="inline-flex items-center justify-center px-5 py-2 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs sm:text-sm font-semibold transition min-w-[120px]">
+                                Terkunci
+                            </a>
+                        @elseif($isDone)
                             <span class="inline-flex items-center justify-center px-3.5 py-1 rounded-md text-xs font-semibold bg-[#eef2f6] text-[#64748b]">
                                 Selesai
                             </span>

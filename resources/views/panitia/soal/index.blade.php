@@ -217,14 +217,14 @@
                         @endforeach
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                         <button type="button" @click="showAddModal = false" 
-                                class="px-5 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                                class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-50 transition tactile-btn">
                             Batal
                         </button>
                         <button type="submit" 
-                                class="px-6 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-medium rounded-lg text-sm shadow-xs transition">
-                            Simpan
+                                class="inline-flex items-center justify-center px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-xs sm:text-sm shadow-xs transition tactile-btn">
+                            Simpan Soal
                         </button>
                     </div>
                 </form>
@@ -284,14 +284,14 @@
                         @endforeach
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                         <button type="button" @click="showEditModal = false" 
-                                class="px-5 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                                class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-50 transition tactile-btn">
                             Batal
                         </button>
                         <button type="submit" 
-                                class="px-6 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-medium rounded-lg text-sm shadow-xs transition">
-                            Simpan
+                                class="inline-flex items-center justify-center px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-xs sm:text-sm shadow-xs transition tactile-btn">
+                            Simpan Perubahan
                         </button>
                     </div>
                 </form>
@@ -341,13 +341,13 @@
                                class="w-full text-xs p-2 rounded-lg border border-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[#1e385b] hover:file:bg-blue-100 cursor-pointer" />
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
                         <button type="button" @click="showImportModal = false" 
-                                class="px-5 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                                class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-50 transition tactile-btn">
                             Batal
                         </button>
                         <button type="submit" 
-                                class="px-6 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-medium rounded-lg text-sm shadow-xs transition">
+                                class="inline-flex items-center justify-center px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-xs sm:text-sm shadow-xs transition tactile-btn">
                             Unggah & Proses
                         </button>
                     </div>

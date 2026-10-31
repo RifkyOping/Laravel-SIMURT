@@ -176,20 +176,20 @@
                         <label class="block text-sm font-medium text-slate-800 mb-1.5">Nama Paket Soal</label>
                         <input type="text" name="nama_paket" required
                             placeholder="misal: Seleksi Kemampuan Dasar (SKD) - Batch 1"
-                            class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder-slate-400" />
+                            class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-800 mb-1.5">Durasi Ujian (Menit)</label>
                         <input type="number" name="durasi" required min="1" placeholder="misal: 120"
-                            class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder-slate-400" />
+                            class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-800 mb-1.5">Status</label>
                         <div class="relative">
                             <select name="status_paket" required
-                                class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs appearance-none bg-white pr-10 text-slate-700">
+                                class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs appearance-none bg-white pr-10 text-slate-700">
                                 <option value="" disabled selected>Pilih Status</option>
                                 <option value="akan_datang">Akan Datang</option>
                                 <option value="berlangsung">Berlangsung</option>
@@ -208,11 +208,11 @@
 
                     <div class="pt-3 flex items-center justify-end gap-3">
                         <button type="button" @click="showAddModal = false"
-                            class="px-5 py-2 border border-slate-300 bg-white text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                            class="px-5 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition tactile-btn cursor-pointer">
                             Batal
                         </button>
                         <button type="submit"
-                            class="px-6 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-medium rounded-lg text-sm shadow-xs transition">
+                            class="px-6 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-medium rounded-lg text-sm shadow-xs transition tactile-btn cursor-pointer">
                             Simpan
                         </button>
                     </div>

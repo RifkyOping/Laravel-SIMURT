@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class PengawasMonitoringController extends Controller
@@ -124,7 +125,7 @@ class PengawasMonitoringController extends Controller
             $sisaWaktuText = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 
             $sesiList = SesiUjian::where('jadwal_id', $selectedJadwal->id)
-                ->with(['jawabanPesertas'])
+                ->with(['jawabanPesertas', 'permintaanIzins'])
                 ->get()
                 ->keyBy('peserta_id');
 
@@ -147,11 +148,14 @@ class PengawasMonitoringController extends Controller
                 if ($sesi && $sesi->jumlah_peringatan > 0) {
                     return 1;
                 }
-                if ($sesi && in_array($sesi->status, ['terputus', 'menunggu_izin'])) {
+                if ($sesi && ($sesi->status === 'menunggu_izin' || $sesi->permintaanIzins->where('status', 'menunggu')->isNotEmpty())) {
                     return 2;
                 }
-                if ($sesi && $sesi->status === 'berlangsung') {
+                if ($sesi && in_array($sesi->status, ['terputus'])) {
                     return 3;
+                }
+                if ($sesi && $sesi->status === 'berlangsung') {
+                    return 4;
                 }
 
                 return 10;
@@ -163,15 +167,24 @@ class PengawasMonitoringController extends Controller
                 $progresSoal = "0/{$totalSoal} Soal";
                 $terakhirAktifText = '-';
                 $sesiId = $sesi?->id;
+                $hasPendingPermission = false;
+                $alasanIzin = null;
 
                 if ($sesi) {
                     $answeredCount = $sesi->jawabanPesertas->whereNotNull('jawaban')->count();
                     $progresSoal = "{$answeredCount}/{$totalSoal} Soal";
+
+                    $pendingIzin = $sesi->permintaanIzins->where('status', 'menunggu')->sortByDesc('created_at')->first();
+                    $hasPendingPermission = ($sesi->status === 'menunggu_izin') || ($pendingIzin !== null);
+                    $alasanIzin = $pendingIzin?->alasan;
+
                     if ($sesi->status === 'diskualifikasi') {
                         $statusText = 'Diskualifikasi';
+                    } elseif ($hasPendingPermission) {
+                        $statusText = 'Menunggu Izin';
                     } elseif ($sesi->jumlah_peringatan > 0) {
                         $statusText = 'Peringatan';
-                    } elseif (in_array($sesi->status, ['terputus', 'menunggu_izin'])) {
+                    } elseif ($sesi->status === 'terputus') {
                         $statusText = 'Terputus';
                     } elseif ($sesi->status === 'selesai') {
                         $statusText = 'Selesai';
@@ -203,6 +216,8 @@ class PengawasMonitoringController extends Controller
                     'status' => $statusText,
                     'progres' => $progresSoal,
                     'terakhir_aktif' => $terakhirAktifText,
+                    'has_pending_permission' => $hasPendingPermission,
+                    'alasan_izin' => $alasanIzin,
                 ];
             });
         }
@@ -246,11 +261,14 @@ class PengawasMonitoringController extends Controller
             if ($sesi && $sesi->jumlah_peringatan > 0) {
                 return 1;
             }
-            if ($sesi && in_array($sesi->status, ['terputus', 'menunggu_izin'])) {
+            if ($sesi && ($sesi->status === 'menunggu_izin' || $sesi->permintaanIzins->where('status', 'menunggu')->isNotEmpty())) {
                 return 2;
             }
-            if ($sesi && $sesi->status === 'berlangsung') {
+            if ($sesi && in_array($sesi->status, ['terputus'])) {
                 return 3;
+            }
+            if ($sesi && $sesi->status === 'berlangsung') {
+                return 4;
             }
 
             return 10;
@@ -273,12 +291,17 @@ class PengawasMonitoringController extends Controller
             $progresSoal = "0/{$totalSoal} Soal";
             $sesiId = $sesi?->id;
             $hasPendingPermission = false;
+            $alasanIzin = null;
             $peringatanTotal = 0;
 
             if ($sesi) {
                 $peringatanTotal = $sesi->jumlah_peringatan;
                 $answeredCount = $sesi->jawabanPesertas->whereNotNull('jawaban')->count();
                 $progresSoal = "{$answeredCount}/{$totalSoal} Soal";
+
+                $pendingIzin = $sesi->permintaanIzins->where('status', 'menunggu')->sortByDesc('created_at')->first();
+                $hasPendingPermission = ($sesi->status === 'menunggu_izin') || ($pendingIzin !== null);
+                $alasanIzin = $pendingIzin?->alasan;
 
                 if ($sesi->last_heartbeat) {
                     $diffSeconds = $now->diffInSeconds(Carbon::parse($sesi->last_heartbeat));
@@ -299,14 +322,13 @@ class PengawasMonitoringController extends Controller
                 if ($sesi->status === 'diskualifikasi') {
                     $statusText = 'Diskualifikasi';
                     $badgeColor = 'red';
-                } elseif ($sesi->status === 'selesai') {
-                    $statusText = 'Selesai';
-                    $badgeColor = 'blue';
-                } elseif ($sesi->status === 'menunggu_izin') {
+                } elseif ($hasPendingPermission) {
                     $statusText = 'Menunggu Izin';
                     $badgeColor = 'orange';
                     $terputusCount++;
-                    $hasPendingPermission = true;
+                } elseif ($sesi->status === 'selesai') {
+                    $statusText = 'Selesai';
+                    $badgeColor = 'blue';
                 } elseif ($diffSeconds > 40 || in_array($sesi->status, ['terputus'])) {
                     $statusText = 'Terputus';
                     $badgeColor = 'red';
@@ -335,6 +357,7 @@ class PengawasMonitoringController extends Controller
                 'terakhir_aktif' => $terakhirAktifText,
                 'peringatan_count' => $peringatanTotal,
                 'has_pending_permission' => $hasPendingPermission,
+                'alasan_izin' => $alasanIzin,
             ];
         }
 
@@ -356,23 +379,66 @@ class PengawasMonitoringController extends Controller
     public function tegur(Request $request, SesiUjian $sesi): JsonResponse|RedirectResponse
     {
         $sesi->increment('jumlah_peringatan');
+        $freshSesi = $sesi->fresh();
 
         $keterangan = $request->input('keterangan', 'Peringatan pengawas: Terdeteksi aktivitas mencurigakan');
 
         Pelanggaran::create([
-            'peserta_id' => $sesi->peserta_id,
-            'jadwal_id' => $sesi->jadwal_id,
+            'peserta_id' => $freshSesi->peserta_id,
+            'jadwal_id' => $freshSesi->jadwal_id,
             'user_id' => Auth::id(),
             'jenis_pelanggaran' => 'Teguran Pengawas',
             'waktu' => now(),
             'keterangan' => $keterangan,
-            'tindakan' => 'Peringatan',
+            'tindakan' => $freshSesi->jumlah_peringatan >= 3 ? 'Kunci Ujian Otomatis (3x Peringatan)' : 'Peringatan',
         ]);
 
-        ActivityLogger::log('Teguran Pengawas', "Teguran dikirim ke {$sesi->peserta->user->name}: {$keterangan}", $sesi->jadwal_id);
+        $isLocked = false;
+        if ($freshSesi->jumlah_peringatan >= 3 && $freshSesi->status === 'berlangsung') {
+            $freshSesi->update(['status' => 'menunggu_izin']);
+            $isLocked = true;
+
+            PermintaanIzin::firstOrCreate(
+                [
+                    'sesi_ujian_id' => $freshSesi->id,
+                    'status' => 'menunggu',
+                ],
+                [
+                    'alasan' => 'Ujian terkunci otomatis oleh sistem karena telah mencapai batas maksimal 3 kali pelanggaran (Teguran Pengawas: '.$keterangan.').',
+                ]
+            );
+
+            ActivityLogger::log('Ujian Terkunci Otomatis', 'Ujian terkunci karena 3 kali pelanggaran (Teguran Pengawas)', $freshSesi->jadwal_id, $freshSesi->peserta->user);
+        } else {
+            ActivityLogger::log('Teguran Pengawas', "Teguran dikirim ke {$freshSesi->peserta->user->name}: {$keterangan}", $freshSesi->jadwal_id);
+        }
+
+        // Kirim notifikasi realtime ke peserta melalui antrean sinyal WebRTC (polled tiap 1 detik oleh peserta)
+        $signalKey = "webrtc:signals:{$freshSesi->id}:peserta";
+        $signals = Cache::get($signalKey, []);
+        if (! is_array($signals)) {
+            $signals = [];
+        }
+        $signals[] = [
+            'type' => 'teguran_pengawas',
+            'data' => [
+                'pesan' => $keterangan,
+                'jumlah_peringatan' => $freshSesi->jumlah_peringatan,
+                'terkunci' => $isLocked,
+                'waktu' => now()->toISOString(),
+            ],
+            'sender_id' => Auth::id(),
+            'timestamp' => now()->toISOString(),
+        ];
+        Cache::put($signalKey, array_slice($signals, -30), now()->addMinutes(3));
 
         if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Teguran berhasil dikirim.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Teguran berhasil dikirim.',
+                'jumlah_peringatan' => $freshSesi->jumlah_peringatan,
+                'terkunci' => $isLocked,
+            ]);
         }
 
         return back()->with('success', 'Teguran berhasil dikirim ke peserta.');
@@ -386,6 +452,7 @@ class PengawasMonitoringController extends Controller
         $sesi->update([
             'status' => 'izin_diberikan',
             'last_heartbeat' => now(),
+            'jumlah_peringatan' => 0, // Reset counter pelanggaran sesi aktif setelah diizinkan pengawas
         ]);
 
         // Update permintaan izin terakhir bila ada
@@ -412,10 +479,48 @@ class PengawasMonitoringController extends Controller
     }
 
     /**
+     * Ambil riwayat audit log pelanggaran peserta untuk modal inspeksi pengawas
+     */
+    public function riwayatPelanggaran(SesiUjian $sesi): JsonResponse
+    {
+        $pelanggarans = Pelanggaran::where('peserta_id', $sesi->peserta_id)
+            ->where('jadwal_id', $sesi->jadwal_id)
+            ->latest('waktu')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'jenis' => $p->jenis_pelanggaran,
+                    'keterangan' => $p->keterangan ?? '-',
+                    'tindakan' => $p->tindakan ?? 'Peringatan Otomatis',
+                    'waktu' => $p->waktu ? $p->waktu->format('H:i:s').' WITA' : '-',
+                    'tanggal' => $p->waktu ? $p->waktu->format('d/m/Y') : '-',
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'peserta_nama' => $sesi->peserta?->user?->name ?? 'Peserta',
+            'no_ujian' => $sesi->peserta?->no_ujian ?? '-',
+            'jumlah_peringatan' => $sesi->jumlah_peringatan,
+            'status_sesi' => $sesi->status,
+            'pelanggarans' => $pelanggarans,
+        ]);
+    }
+
+    /**
      * Aksi Pengawas: Blokir / Diskualifikasi peserta (rule 02-l)
      */
     public function blokir(Request $request, SesiUjian $sesi): JsonResponse|RedirectResponse
     {
+        if ($sesi->status === 'diskualifikasi') {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Peserta sudah didiskualifikasi.']);
+            }
+
+            return back()->with('info', 'Peserta sudah didiskualifikasi.');
+        }
+
         $keterangan = $request->input('alasan', 'Diskualifikasi oleh pengawas karena pelanggaran aturan ujian.');
 
         $sesi->update([

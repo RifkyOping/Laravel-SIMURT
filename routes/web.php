@@ -22,6 +22,7 @@ use App\Http\Controllers\Peserta\PesertaHasilController;
 use App\Http\Controllers\Peserta\PesertaJadwalController;
 use App\Http\Controllers\Peserta\PesertaUjianController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WebRtcSignalingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -143,6 +144,7 @@ Route::middleware(['auth', 'role:pengawas'])->prefix('pengawas')->name('pengawas
     Route::get('/monitoring', [PengawasMonitoringController::class, 'index'])->name('monitoring.index');
     Route::get('/monitoring/{jadwal}', [PengawasMonitoringController::class, 'show'])->name('monitoring.show');
     Route::get('/monitoring/{jadwal}/poll', [PengawasMonitoringController::class, 'pollData'])->name('monitoring.poll');
+    Route::get('/monitoring/sesi/{sesi}/pelanggaran', [PengawasMonitoringController::class, 'riwayatPelanggaran'])->name('monitoring.pelanggaran');
     Route::post('/monitoring/sesi/{sesi}/tegur', [PengawasMonitoringController::class, 'tegur'])->name('monitoring.tegur');
     Route::post('/monitoring/sesi/{sesi}/izin', [PengawasMonitoringController::class, 'izin'])->name('monitoring.izin');
     Route::post('/monitoring/sesi/{sesi}/blokir', [PengawasMonitoringController::class, 'blokir'])->name('monitoring.blokir');
@@ -170,6 +172,15 @@ Route::middleware(['auth', 'role:peserta', 'status_akun'])->prefix('peserta')->n
 
     Route::get('/hasil', [PesertaHasilController::class, 'index'])->name('hasil.index');
     Route::get('/hasil/{jadwal}', [PesertaHasilController::class, 'show'])->name('hasil.show');
+});
+
+// ==========================================
+// WEBRTC SIGNALING PROCTORING (P2P Monitoring)
+// ==========================================
+Route::middleware(['auth'])->prefix('webrtc')->name('webrtc.')->group(function () {
+    Route::post('/sesi/{sesi}/signal', [WebRtcSignalingController::class, 'sendSignal'])->name('signal.send');
+    Route::get('/sesi/{sesi}/signal', [WebRtcSignalingController::class, 'getSignal'])->name('signal.get');
+    Route::post('/sesi/{sesi}/close', [WebRtcSignalingController::class, 'closeSession'])->name('signal.close');
 });
 
 require __DIR__.'/auth.php';

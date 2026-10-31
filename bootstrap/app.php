@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'status_akun' => AccountStatusMiddleware::class,
         ]);
+
+        $middleware->trimStrings(except: [
+            'data',
+            'data.sdp',
+            'data.sdp.sdp',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

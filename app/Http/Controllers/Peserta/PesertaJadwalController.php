@@ -41,7 +41,7 @@ class PesertaJadwalController extends Controller
         return view('peserta.jadwal.index', compact('jadwals', 'filter', 'sesiMap'));
     }
 
-    public function konfirmasi(Jadwal $jadwal): View
+    public function konfirmasi(Jadwal $jadwal): View|RedirectResponse
     {
         $user = Auth::user();
         $peserta = $user->peserta;
@@ -51,6 +51,10 @@ class PesertaJadwalController extends Controller
         $sesi = SesiUjian::where('jadwal_id', $jadwal->id)
             ->where('peserta_id', $peserta->id)
             ->first();
+
+        if ($sesi && $sesi->status === 'diskualifikasi') {
+            return redirect()->route('peserta.ujian.masuk', $jadwal->id);
+        }
 
         $totalSoal = $jadwal->paketSoal->bankSoals()->where('aktif', true)->count();
 

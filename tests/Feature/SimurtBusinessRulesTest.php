@@ -4,9 +4,11 @@ use App\Models\BankSoal;
 use App\Models\Jadwal;
 use App\Models\PaketSoal;
 use App\Models\Peserta;
+use App\Models\SesiUjian;
 use App\Models\User;
 use App\Services\ExamSessionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
 
@@ -229,4 +231,187 @@ test('pengawas dapat melakukan polling monitoring real-time dan intervensi bloki
     $nilai = $peserta->nilaiUjians()->where('jadwal_id', $jadwal->id)->first();
     expect($nilai->status_kelulusan)->toBe('DISKUALIFIKASI');
     expect((float) $nilai->nilai_akhir)->toBe(0.0);
+});
+
+test('peserta yang diblokir tidak dapat masuk ruang ujian dan tidak dapat mengajukan izin', function () {
+    $pengawas = User::factory()->create(['role' => 'pengawas', 'status_akun' => 'aktif']);
+
+    $paket = PaketSoal::create([
+        'nama_paket' => 'Paket Pengawasan Blokir',
+        'durasi' => 60,
+        'passing_grade' => 300,
+        'status_paket' => 'berlangsung',
+    ]);
+
+    $jadwal = Jadwal::create([
+        'paket_soal_id' => $paket->id,
+        'nama_ujian' => 'Ujian Blokir Terkunci',
+        'tanggal' => now()->toDateString(),
+        'jam_mulai' => '07:00:00',
+        'jam_selesai' => '23:00:00',
+        'durasi' => 60,
+        'status' => 'berlangsung',
+    ]);
+
+    $pesertaUser = User::factory()->create(['role' => 'peserta', 'status_akun' => 'terverifikasi']);
+    $peserta = Peserta::create(['user_id' => $pesertaUser->id, 'no_identitas' => 'NIKBLOKIRTEST']);
+    $jadwal->pesertas()->attach($peserta->id);
+
+    $service = app(ExamSessionService::class);
+    $sesi = $service->startOrResumeSession($jadwal, $peserta);
+
+    // Pengawas memblokir peserta
+    $this->actingAs($pengawas)->post(route('pengawas.monitoring.blokir', $sesi->id), [
+        'alasan' => 'Pelanggaran berat',
+    ]);
+
+    $sesi->refresh();
+    expect($sesi->status)->toBe('diskualifikasi');
+
+    // 1. Peserta mencoba masuk ruang ujian -> menampilkan halaman terkunci dengan status didiskualifikasi
+    $masukResponse = $this->actingAs($pesertaUser)->get(route('peserta.ujian.masuk', $jadwal->id));
+    $masukResponse->assertOk();
+    $masukResponse->assertSee('Akses Ujian Diblokir (Didiskualifikasi)');
+    $masukResponse->assertSee('Akses Ditutup Permanen');
+    $masukResponse->assertDontSee('Ajukan Izin Masuk Kembali');
+
+    // 2. Peserta mencoba mengajukan permohonan izin -> ditolak
+    $izinResponse = $this->actingAs($pesertaUser)->post(route('peserta.ujian.minta-izin', $sesi->id), [
+        'alasan' => 'Tolong izinkan saya kembali',
+    ]);
+    $izinResponse->assertSessionHas('error');
+    $sesi->refresh();
+    expect($sesi->status)->toBe('diskualifikasi');
+});
+
+test('peserta yang sudah diblokir tidak lagi menampilkan tombol blokir pada pengawas dan polling status diskualifikasi', function () {
+    $pengawas = User::factory()->create(['role' => 'pengawas', 'status_akun' => 'aktif']);
+
+    $paket = PaketSoal::create([
+        'nama_paket' => 'Paket Pengawas Blokir',
+        'durasi' => 60,
+        'passing_grade' => 300,
+        'status_paket' => 'berlangsung',
+    ]);
+
+    $jadwal = Jadwal::create([
+        'paket_soal_id' => $paket->id,
+        'nama_ujian' => 'Ujian Monitoring Blokir',
+        'tanggal' => now()->toDateString(),
+        'jam_mulai' => '07:00:00',
+        'jam_selesai' => '23:00:00',
+        'durasi' => 60,
+        'status' => 'berlangsung',
+    ]);
+
+    $jadwal->pengawas()->attach($pengawas->id);
+
+    $pesertaUser = User::factory()->create(['role' => 'peserta', 'status_akun' => 'terverifikasi', 'name' => 'Budi Blokir']);
+    $peserta = Peserta::create(['user_id' => $pesertaUser->id, 'no_identitas' => 'NIKBUDIBLOKIR']);
+    $jadwal->pesertas()->attach($peserta->id);
+
+    $service = app(ExamSessionService::class);
+    $sesi = $service->startOrResumeSession($jadwal, $peserta);
+
+    // Pengawas memblokir peserta
+    $blockResponse = $this->actingAs($pengawas)->postJson(route('pengawas.monitoring.blokir', $sesi->id), [
+        'alasan' => 'Membuka tab lain berulang kali',
+    ]);
+    $blockResponse->assertOk();
+    $blockResponse->assertJson(['success' => true]);
+
+    $sesi->refresh();
+    expect($sesi->status)->toBe('diskualifikasi');
+
+    // Pengawas memanggil blokir lagi -> tetap aman dan idempotent
+    $repeatBlock = $this->actingAs($pengawas)->postJson(route('pengawas.monitoring.blokir', $sesi->id), [
+        'alasan' => 'Mencoba blokir lagi',
+    ]);
+    $repeatBlock->assertOk();
+
+    // Data polling monitoring menampilkan status Diskualifikasi
+    $pollResponse = $this->actingAs($pengawas)->getJson(route('pengawas.monitoring.poll', $jadwal->id));
+    $pollResponse->assertOk();
+    $pollData = $pollResponse->json();
+    $item = collect($pollData['items'])->firstWhere('peserta_id', $peserta->id);
+    expect($item['status'])->toBe('Diskualifikasi');
+
+    // Tampilan dashboard fallback pengawas menampilkan Diblokir
+    $dashboardResponse = $this->actingAs($pengawas)->get(route('pengawas.dashboard'));
+    $dashboardResponse->assertOk();
+    $dashboardResponse->assertSee('Diblokir');
+});
+
+test('pengawas dapat mengirim teguran ke peserta dan otomatis terkunci pada teguran ke-3', function () {
+    $pengawas = User::factory()->create(['role' => 'pengawas', 'status_akun' => 'aktif']);
+
+    $paket = PaketSoal::create([
+        'nama_paket' => 'Paket Teguran Test',
+        'durasi' => 60,
+        'passing_grade' => 300,
+        'status_paket' => 'berlangsung',
+    ]);
+
+    $jadwal = Jadwal::create([
+        'paket_soal_id' => $paket->id,
+        'nama_ujian' => 'Ujian Teguran Realtime',
+        'tanggal' => now()->toDateString(),
+        'jam_mulai' => '07:00:00',
+        'jam_selesai' => '23:00:00',
+        'durasi' => 60,
+        'status_jadwal' => 'berlangsung',
+    ]);
+
+    $userPeserta = User::factory()->create(['role' => 'peserta', 'status_akun' => 'aktif']);
+    $peserta = Peserta::create([
+        'user_id' => $userPeserta->id,
+        'no_identitas' => '3201019900010099',
+        'instansi' => 'Umum',
+    ]);
+
+    $sesi = SesiUjian::create([
+        'peserta_id' => $peserta->id,
+        'jadwal_id' => $jadwal->id,
+        'waktu_masuk' => now(),
+        'status' => 'berlangsung',
+        'jumlah_peringatan' => 0,
+        'last_heartbeat' => now(),
+    ]);
+
+    // Teguran ke-1 via JSON
+    $res1 = $this->actingAs($pengawas)->postJson(route('pengawas.monitoring.tegur', $sesi->id), [
+        'keterangan' => 'Jangan menoleh ke kiri atau kanan',
+    ]);
+    $res1->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('jumlah_peringatan', 1)
+        ->assertJsonPath('terkunci', false);
+
+    $sesi->refresh();
+    expect($sesi->jumlah_peringatan)->toBe(1);
+    expect($sesi->status)->toBe('berlangsung');
+
+    // Pastikan sinyal WebRTC terkirim ke antrean peserta
+    $signals = Cache::get("webrtc:signals:{$sesi->id}:peserta", []);
+    expect($signals)->not->toBeEmpty();
+    $latestSignal = end($signals);
+    expect($latestSignal['type'])->toBe('teguran_pengawas');
+    expect($latestSignal['data']['pesan'])->toBe('Jangan menoleh ke kiri atau kanan');
+
+    // Teguran ke-2
+    $res2 = $this->actingAs($pengawas)->postJson(route('pengawas.monitoring.tegur', $sesi->id), [
+        'keterangan' => 'Peringatan kedua: harap fokus ke layar',
+    ]);
+    $res2->assertOk()->assertJsonPath('jumlah_peringatan', 2);
+
+    // Teguran ke-3 -> Harus auto-lock
+    $res3 = $this->actingAs($pengawas)->postJson(route('pengawas.monitoring.tegur', $sesi->id), [
+        'keterangan' => 'Peringatan ketiga: Ujian Anda dikunci',
+    ]);
+    $res3->assertOk()
+        ->assertJsonPath('jumlah_peringatan', 3)
+        ->assertJsonPath('terkunci', true);
+
+    $sesi->refresh();
+    expect($sesi->status)->toBe('menunggu_izin');
 });

@@ -124,18 +124,36 @@ class ExamSessionService
     public function recordViolation(SesiUjian $sesi, string $jenis, ?string $keterangan = null): Pelanggaran
     {
         $sesi->increment('jumlah_peringatan');
+        $freshSesi = $sesi->fresh();
 
         $pelanggaran = Pelanggaran::create([
-            'peserta_id' => $sesi->peserta_id,
-            'jadwal_id' => $sesi->jadwal_id,
+            'peserta_id' => $freshSesi->peserta_id,
+            'jadwal_id' => $freshSesi->jadwal_id,
             'user_id' => null, // Sistem
             'jenis_pelanggaran' => $jenis,
             'waktu' => now(),
             'keterangan' => $keterangan ?? "Terdeteksi aktivitas: {$jenis}",
-            'tindakan' => 'Peringatan Otomatis',
+            'tindakan' => $freshSesi->jumlah_peringatan >= 3 ? 'Kunci Ujian Otomatis (3x Peringatan)' : 'Peringatan Otomatis',
         ]);
 
-        ActivityLogger::log('Pelanggaran Terdeteksi', $keterangan ?? $jenis, $sesi->jadwal_id, $sesi->peserta->user);
+        // Auto-lock jika mencapai batas maksimal 3 kali pelanggaran
+        if ($freshSesi->jumlah_peringatan >= 3 && $freshSesi->status === 'berlangsung') {
+            $freshSesi->update(['status' => 'menunggu_izin']);
+
+            PermintaanIzin::firstOrCreate(
+                [
+                    'sesi_ujian_id' => $freshSesi->id,
+                    'status' => 'menunggu',
+                ],
+                [
+                    'alasan' => 'Ujian terkunci otomatis oleh sistem karena telah mencapai batas maksimal 3 kali pelanggaran ('.$jenis.').',
+                ]
+            );
+
+            ActivityLogger::log('Ujian Terkunci Otomatis', "Ujian terkunci karena 3 kali pelanggaran: {$jenis}", $freshSesi->jadwal_id, $freshSesi->peserta->user);
+        } else {
+            ActivityLogger::log('Pelanggaran Terdeteksi', $keterangan ?? $jenis, $freshSesi->jadwal_id, $freshSesi->peserta->user);
+        }
 
         return $pelanggaran;
     }
@@ -145,6 +163,10 @@ class ExamSessionService
      */
     public function submitPermissionRequest(SesiUjian $sesi, string $alasan): PermintaanIzin
     {
+        if ($sesi->status === 'diskualifikasi') {
+            throw new Exception('Akses ditolak: Anda telah didiskualifikasi dari ujian ini dan tidak dapat mengajukan izin.');
+        }
+
         $permintaan = PermintaanIzin::create([
             'sesi_ujian_id' => $sesi->id,
             'alasan' => $alasan,

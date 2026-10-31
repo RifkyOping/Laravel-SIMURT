@@ -164,3 +164,40 @@ test('filter tab pada halaman jadwal ujian bekerja dengan baik', function () {
     $responseSelesai->assertSee('Ujian Yang Sudah Selesai');
     $responseSelesai->assertDontSee('Ujian Aktif Hari Ini');
 });
+
+test('peserta dapat mengakses halaman konfirmasi sebelum masuk ruang ujian dengan pemeriksaan perangkat', function () {
+    $user = User::factory()->create([
+        'role' => 'peserta',
+        'status_akun' => 'terverifikasi',
+    ]);
+    $peserta = Peserta::create([
+        'user_id' => $user->id,
+        'no_identitas' => '3171012345670003',
+    ]);
+
+    $paket = PaketSoal::create([
+        'nama_paket' => 'Paket Konfirmasi Ujian',
+        'aktif' => true,
+    ]);
+
+    $jadwal = Jadwal::create([
+        'paket_soal_id' => $paket->id,
+        'nama_ujian' => 'Ujian Pra-Pemeriksaan Perangkat',
+        'tanggal' => Carbon::today(),
+        'jam_mulai' => '08:00:00',
+        'jam_selesai' => '12:00:00',
+        'durasi' => 90,
+        'passing_grade' => 300,
+        'status' => 'berlangsung',
+    ]);
+
+    $peserta->jadwals()->attach($jadwal->id);
+
+    $response = $this->actingAs($user)->get(route('peserta.jadwal.konfirmasi', $jadwal->id));
+    $response->assertOk();
+    $response->assertSee('Konfirmasi Masuk Ruang Ujian');
+    $response->assertSee('Pemeriksaan Perangkat');
+    $response->assertSee('Kamera Peserta');
+    $response->assertSee('Pemantauan Layar');
+    $response->assertSee('Mulai Ujian Sekarang');
+});

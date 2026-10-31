@@ -223,7 +223,7 @@
              x-transition:leave="transition-opacity ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" 
+             class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" 
              style="display: none;">
             <div x-show="showAddModal"
                  x-transition:enter="transition ease-spring duration-250"
@@ -236,9 +236,9 @@
                  class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h3 class="text-base font-bold text-slate-900">Tambah Akun Pengguna Baru</h3>
-                    <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 p-1 tactile-btn">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <button type="button" @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition tactile-btn cursor-pointer" title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -249,19 +249,19 @@
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Nama Lengkap</label>
                         <input type="text" name="name" required placeholder="Nama lengkap pengguna"
-                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition" />
+                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition" />
                     </div>
 
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Email</label>
                         <input type="email" name="email" required placeholder="user@simurt.id"
-                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition" />
+                               class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block font-medium text-slate-700 mb-1">Role Akun</label>
-                            <select name="role" required class="w-full text-xs sm:text-sm px-3 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition">
+                            <select name="role" required class="w-full text-xs sm:text-sm px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition">
                                 <option value="peserta">Peserta</option>
                                 <option value="panitia">Panitia</option>
                                 <option value="pengawas">Pengawas</option>
@@ -270,7 +270,7 @@
                         </div>
                         <div>
                             <label class="block font-medium text-slate-700 mb-1">Status Akun</label>
-                            <select name="status_akun" required class="w-full text-xs sm:text-sm px-3 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition">
+                            <select name="status_akun" required class="w-full text-xs sm:text-sm px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition">
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Non-Aktif</option>
                                 <option value="terverifikasi">Terverifikasi</option>
@@ -283,22 +283,22 @@
                         <div>
                             <label class="block font-medium text-slate-700 mb-1">Password</label>
                             <input type="password" name="password" required placeholder="Min 8 karakter"
-                                   class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition" />
+                                   class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition" />
                         </div>
                         <div>
                             <label class="block font-medium text-slate-700 mb-1">Konfirmasi Password</label>
                             <input type="password" name="password_confirmation" required placeholder="Ulangi password"
-                                   class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 transition" />
+                                   class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] transition" />
                         </div>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5">
                         <button type="button" @click="showAddModal = false" 
-                                class="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-50 tactile-btn">
+                                class="px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 transition tactile-btn cursor-pointer">
                             Batal
                         </button>
                         <button type="submit" 
-                                class="px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-medium rounded-lg text-xs tactile-btn">
+                                class="px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-xs shadow-xs transition tactile-btn cursor-pointer">
                             Simpan Pengguna
                         </button>
                     </div>

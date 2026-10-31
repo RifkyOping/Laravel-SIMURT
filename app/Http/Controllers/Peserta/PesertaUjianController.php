@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Peserta;
 use App\Http\Controllers\Controller;
 use App\Models\BankSoal;
 use App\Models\Jadwal;
+use App\Models\Pelanggaran;
 use App\Models\SesiUjian;
 use App\Services\ExamSessionService;
 use Carbon\Carbon;
@@ -135,11 +136,30 @@ class PesertaUjianController extends Controller
             ]);
         }
 
+        // Jika status sesi terkunci / diskualifikasi / menunggu izin
+        if (in_array($sesi->status, ['diskualifikasi', 'menunggu_izin', 'terputus'])) {
+            return response()->json([
+                'success' => true,
+                'status' => $sesi->status,
+                'terkunci' => true,
+                'redirect' => route('peserta.ujian.masuk', $jadwal->id),
+            ]);
+        }
+
+        $latestTeguran = Pelanggaran::where('peserta_id', $sesi->peserta_id)
+            ->where('jadwal_id', $sesi->jadwal_id)
+            ->where('jenis_pelanggaran', 'Teguran Pengawas')
+            ->where('waktu', '>=', now()->subSeconds(45))
+            ->latest('id')
+            ->first();
+
         return response()->json([
             'success' => true,
             'status' => $sesi->status,
             'jumlah_peringatan' => $sesi->jumlah_peringatan,
             'sisa_detik' => $sisaDetik,
+            'pesan_teguran' => $latestTeguran?->keterangan,
+            'latest_teguran_id' => $latestTeguran?->id,
         ]);
     }
 
@@ -152,10 +172,15 @@ class PesertaUjianController extends Controller
         $keterangan = $request->input('keterangan', 'Terdeteksi beralih dari jendela ruang ujian');
 
         $this->sessionService->recordViolation($sesi, $jenis, $keterangan);
+        $freshSesi = $sesi->fresh();
+        $isLocked = in_array($freshSesi->status, ['menunggu_izin', 'terputus', 'diskualifikasi']);
 
         return response()->json([
             'success' => true,
-            'peringatan_count' => $sesi->fresh()->jumlah_peringatan,
+            'peringatan_count' => $freshSesi->jumlah_peringatan,
+            'status' => $freshSesi->status,
+            'terkunci' => $isLocked,
+            'redirect' => $isLocked ? route('peserta.ujian.masuk', $sesi->jadwal_id) : null,
         ]);
     }
 
@@ -164,6 +189,10 @@ class PesertaUjianController extends Controller
      */
     public function mintaIzin(Request $request, SesiUjian $sesi): RedirectResponse
     {
+        if ($sesi->status === 'diskualifikasi') {
+            return back()->with('error', 'Akses ditolak: Anda telah didiskualifikasi dari ujian ini dan tidak dapat mengajukan izin masuk kembali.');
+        }
+
         $request->validate([
             'alasan' => 'required|string|max:500',
         ]);

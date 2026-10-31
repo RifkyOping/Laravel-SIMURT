@@ -82,7 +82,7 @@ class PengawasDashboardController extends Controller
             $sisaWaktuText = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 
             $sesiList = SesiUjian::where('jadwal_id', $jadwalAktif->id)
-                ->with(['jawabanPesertas'])
+                ->with(['jawabanPesertas', 'permintaanIzins'])
                 ->get()
                 ->keyBy('peserta_id');
 
@@ -105,11 +105,14 @@ class PengawasDashboardController extends Controller
                 if ($sesi && $sesi->jumlah_peringatan > 0) {
                     return 1;
                 }
-                if ($sesi && in_array($sesi->status, ['terputus', 'menunggu_izin'])) {
+                if ($sesi && ($sesi->status === 'menunggu_izin' || $sesi->permintaanIzins->where('status', 'menunggu')->isNotEmpty())) {
                     return 2;
                 }
-                if ($sesi && $sesi->status === 'berlangsung') {
+                if ($sesi && in_array($sesi->status, ['terputus'])) {
                     return 3;
+                }
+                if ($sesi && $sesi->status === 'berlangsung') {
+                    return 4;
                 }
 
                 return 10;
@@ -121,16 +124,24 @@ class PengawasDashboardController extends Controller
                 $progresSoal = "0/{$totalSoal} Soal";
                 $terakhirAktifText = '-';
                 $sesiId = $sesi?->id;
+                $hasPendingPermission = false;
+                $alasanIzin = null;
 
                 if ($sesi) {
                     $answeredCount = $sesi->jawabanPesertas->whereNotNull('jawaban')->count();
                     $progresSoal = "{$answeredCount}/{$totalSoal} Soal";
 
+                    $pendingIzin = $sesi->permintaanIzins->where('status', 'menunggu')->sortByDesc('created_at')->first();
+                    $hasPendingPermission = ($sesi->status === 'menunggu_izin') || ($pendingIzin !== null);
+                    $alasanIzin = $pendingIzin?->alasan;
+
                     if ($sesi->status === 'diskualifikasi') {
                         $statusText = 'Diskualifikasi';
+                    } elseif ($hasPendingPermission) {
+                        $statusText = 'Menunggu Izin';
                     } elseif ($sesi->jumlah_peringatan > 0) {
                         $statusText = 'Peringatan';
-                    } elseif (in_array($sesi->status, ['terputus', 'menunggu_izin'])) {
+                    } elseif ($sesi->status === 'terputus') {
                         $statusText = 'Terputus';
                     } elseif ($sesi->status === 'selesai') {
                         $statusText = 'Selesai';
@@ -162,6 +173,8 @@ class PengawasDashboardController extends Controller
                     'status' => $statusText,
                     'progres' => $progresSoal,
                     'terakhir_aktif' => $terakhirAktifText,
+                    'has_pending_permission' => $hasPendingPermission,
+                    'alasan_izin' => $alasanIzin,
                 ];
             });
         }

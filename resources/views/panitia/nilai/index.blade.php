@@ -232,13 +232,14 @@
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95">
             <div @click.away="showDetailModal = false"
-                 class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-8">
+                 class="bg-white rounded-xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-8">
                 <!-- Header -->
                 <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="text-lg font-bold text-slate-900">Detail Hasil Ujian</h3>
                     <button type="button" @click="showDetailModal = false"
-                            class="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition p-1.5 rounded-lg cursor-pointer tactile-btn"
+                            title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -256,17 +257,17 @@
                     </div>
                     <div>
                         <template x-if="detailData.status_kelulusan === 'LULUS'">
-                            <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-[#dcfce7] text-[#16a34a]">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 LULUS
                             </span>
                         </template>
                         <template x-if="detailData.status_kelulusan === 'DISKUALIFIKASI'">
-                            <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-[#ef4444] text-white">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-600 text-white">
                                 DISKUALIFIKASI
                             </span>
                         </template>
                         <template x-if="detailData.status_kelulusan === 'TIDAK LULUS'">
-                            <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-[#fee2e2] text-[#dc2626]">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                                 TIDAK LULUS
                             </span>
                         </template>
@@ -277,19 +278,19 @@
                 <div class="space-y-2">
                     <span class="text-xs font-semibold text-slate-500 block text-center">Statistik Hasil</span>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-2xs">
+                        <div class="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-xs">
                             <span class="text-xs text-slate-500 font-medium block">Nilai Akhir</span>
                             <span class="text-2xl font-bold text-slate-900 mt-1 block" x-text="detailData.nilai_akhir"></span>
                         </div>
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-2xs">
+                        <div class="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-xs">
                             <span class="text-xs text-slate-500 font-medium block">Jawaban Benar</span>
                             <span class="text-2xl font-bold text-slate-900 mt-1 block" x-text="detailData.jumlah_benar"></span>
                         </div>
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-2xs">
+                        <div class="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-xs">
                             <span class="text-xs text-slate-500 font-medium block">Jawaban Salah</span>
                             <span class="text-2xl font-bold text-slate-900 mt-1 block" x-text="detailData.jumlah_salah"></span>
                         </div>
-                        <div class="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-2xs">
+                        <div class="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-xs">
                             <span class="text-xs text-slate-500 font-medium block">Tidak Dijawab</span>
                             <span class="text-2xl font-bold text-slate-900 mt-1 block" x-text="detailData.jumlah_tidak_dijawab"></span>
                         </div>
@@ -314,7 +315,7 @@
                 <!-- Catatan Pengawasan / Pelanggaran -->
                 <div class="space-y-1.5">
                     <span class="text-xs font-bold text-slate-700 block">Catatan Pengawasan / Pelanggaran</span>
-                    <div class="bg-[#f8fafc] border border-slate-200/80 rounded-xl p-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    <div class="bg-slate-50 border border-slate-200/80 rounded-lg p-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
                         <p x-text="detailData.catatan"></p>
                     </div>
                 </div>
@@ -322,7 +323,7 @@
                 <!-- Footer Action Buttons -->
                 <div class="flex justify-end pt-2">
                     <button type="button" @click="showDetailModal = false"
-                            class="px-6 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-semibold rounded-lg text-sm shadow-xs transition cursor-pointer">
+                            class="px-6 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-sm shadow-xs transition cursor-pointer tactile-btn">
                         Tutup
                     </button>
                 </div>

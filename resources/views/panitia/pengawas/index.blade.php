@@ -157,7 +157,11 @@
                  class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h3 class="text-base font-bold text-slate-900">Tambah Akun Pengawas Baru</h3>
-                    <button type="button" @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+                    <button type="button" @click="showAddModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition tactile-btn cursor-pointer" title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
 
                 <form method="POST" action="{{ route('panitia.pengawas.store') }}" class="space-y-4">
@@ -166,40 +170,40 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                         <input type="text" name="name" required placeholder="Nama pengawas"
-                               class="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs" />
+                               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder:text-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat Email</label>
                         <input type="email" name="email" required placeholder="pengawas@simurt.id"
-                               class="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs" />
+                               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder:text-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Identitas (NIK)</label>
                         <input type="text" name="no_identitas" placeholder="16 digit NIK (opsional)"
-                               class="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs font-mono" />
+                               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs font-mono text-slate-800 placeholder:text-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
                         <input type="password" name="password" required placeholder="Minimal 8 karakter"
-                               class="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs" />
+                               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder:text-slate-400" />
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Konfirmasi Password</label>
                         <input type="password" name="password_confirmation" required placeholder="Ulangi password"
-                               class="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs" />
+                               class="w-full text-sm px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#1e385b] focus:border-[#1e385b] shadow-xs text-slate-800 placeholder:text-slate-400" />
                     </div>
 
                     <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5">
                         <button type="button" @click="showAddModal = false" 
-                                class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition">
+                                class="px-4 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition tactile-btn cursor-pointer">
                             Batal
                         </button>
                         <button type="submit" 
-                                class="px-5 py-2 bg-[#1e385b] hover:bg-[#152740] text-white font-semibold rounded-lg text-sm shadow-xs transition">
+                                class="px-5 py-2 bg-[#1e385b] hover:bg-[#152843] text-white font-semibold rounded-lg text-sm shadow-xs transition tactile-btn cursor-pointer">
                             Simpan Pengawas
                         </button>
                     </div>

@@ -92,19 +92,19 @@
                                         $jenis = $log->jenis_pelanggaran;
                                     @endphp
                                     @if(str_contains($jenis, 'Peringatan'))
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#fef3c7] text-[#92400e]">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                                             Peringatan
                                         </span>
                                     @elseif(str_contains($jenis, 'Izin'))
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#d1fae5] text-[#065f46]">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             Izin Masuk
                                         </span>
                                     @elseif(str_contains($jenis, 'Diskualifikasi'))
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#fee2e2] text-[#991b1b]">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                                             Diskualifikasi
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#e0f2fe] text-[#0369a1]">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
                                             Sistem
                                         </span>
                                     @endif

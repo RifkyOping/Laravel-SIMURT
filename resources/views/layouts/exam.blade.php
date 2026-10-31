@@ -16,8 +16,25 @@
 
     <!-- Scripts & Styles (Vite Lokal Offline) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        /* Anti-seleksi teks, drag, dan long-press menu untuk semua browser (Desktop, Android, iOS) */
+        *, *::before, *::after {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important; /* Nonaktifkan popup menu saat tekan lama di HP Android / iOS */
+        }
+        input, textarea {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+    </style>
 </head>
-<body class="bg-white text-slate-800 antialiased font-sans select-none min-h-screen flex flex-col">
+<body class="bg-white text-slate-800 antialiased font-sans select-none min-h-screen flex flex-col"
+      oncontextmenu="return false;"
+      ondragstart="return false;">
     {{ $slot }}
 </body>
 </html>

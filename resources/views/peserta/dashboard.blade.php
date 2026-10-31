@@ -69,7 +69,11 @@
                                         {{ substr($j->jam_mulai, 0, 5) }} - {{ substr($j->jam_selesai, 0, 5) }} WITA
                                     </td>
                                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                        @if($sesi && $sesi->status === 'selesai')
+                                        @if($sesi && $sesi->status === 'diskualifikasi')
+                                            <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                                Didiskualifikasi
+                                            </span>
+                                        @elseif($sesi && $sesi->status === 'selesai')
                                             <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                                                 Selesai
                                             </span>
@@ -84,7 +88,12 @@
                                         @endif
                                     </td>
                                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                        @if($sesi && $sesi->status === 'selesai')
+                                        @if($sesi && $sesi->status === 'diskualifikasi')
+                                            <a href="{{ route('peserta.ujian.masuk', $j->id) }}" 
+                                               class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 font-semibold text-xs border border-rose-200 transition">
+                                                Terkunci
+                                            </a>
+                                        @elseif($sesi && $sesi->status === 'selesai')
                                             <a href="{{ route('peserta.hasil.show', $j->id) }}" 
                                                class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">
                                                 Lihat Hasil
